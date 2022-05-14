@@ -13,14 +13,12 @@ let doWork = function (job, timer, cb) {
   // console.log(`在 setTimeout 之後 ${job}`);
 };
 
-doWork("刷牙", 3000, function (result) {
+doWork('刷牙', 3000, function (result) {
   console.log(result);
+  doWork('吃早餐', 5000, function (result) {
+    console.log(result);
+    doWork('寫功課', 3000, function (result) {
+      console.log(result);
+    });
+  });
 });
-
-setTimeout(() => {doWork("吃早餐", 5000, function (result) {
-  console.log(result);
-})},3000);
-
-setTimeout(() => {doWork("寫功課", 3000, function (result) {
-  console.log(result);
-})},8000);
