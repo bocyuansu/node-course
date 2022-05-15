@@ -1,32 +1,26 @@
 // Promise 是一個表示非同步運算的最終完成或失敗的『物件』。
+// 專門用來處理 非同步行為
 
 // Promise 有三種狀態：
-  // 未決議(pending)
-  // 已決議(resolved)
-  // 已拒絕(rejected)
+  // 擱置(pending)
+  // 實現(resolved/fulfilled)
+  // 拒絕(rejected)
 
-// 生成Promise的方式：
-  // new Promise()
-  // Promise.resolve()
-  // Promise.reject()
-
+// Promise 初始狀態：PromiseState: "pending" , PromiseResult: "undefined"
+// 用 resolve() , reject() 可以讓 PromiseState 從 pending 變成 fulfilled 或 rejected
 
 // 在 promise 例項上呼叫 then 或 catch 方法也會生成 promise 物件，故可進行 promise 鏈
 
-// 1. 非同步
-// 2. 「最終」成功、「最終」失敗
-// 3. 物件 --> new Promise();
+// new Promise 內的函式會立即被執行，當 resolve 得到內容後，才會執行 .then。
+// 1. 在 .then 的 resolvedCallback 中，可以得到在 new Promise 中 resolve 內所得到的值（value）。
+// 2. 如果在 .then 的 resolvedCallback 中 return 一個值，則這個值會以 Promise 物件的形式傳到下一個 .then。
+// 3. 因此在下一個 .then 的 resolvedCallback 中，可以取得上一個 .then 中 return 的值。
+// 4. 但如果我們在 .then 中是 return 另一個 new Promise ，則下一個 .then 會等到這個 Promise 中的 resolve  得到值後才執行。
+// 5. 且在下一個 .then 的 resolvedCallback 中，可以得到上一個 new Promise 中 resolve 的值
 
-// -> 用來解決 callback hell
-
-// new Promise(executor);
-// new 的時候要傳入 executor --> executor 也只是一個函式
-
-// function executor(resovle, reject) {
-//   // 非同步工作
-//   // 做成功的時候，你就呼叫 resolve
-//   // 做失敗的時候，你就呼叫 reject
-// }
+// Promise 基本使用
+  // 在 new Promise 內的函式會被馬上執行
+  // 當 resolve 得到內容後，才會執行 .then
 
 let dt = new Date();
 console.log(`起床了 at ${dt.toISOString()}`);
@@ -37,15 +31,15 @@ let doWork = function (job, timer) {
     setTimeout(() => {
       let dt = new Date();
       let result = `完成工作: ${job} at ${dt.toISOString()}`;
-      resolve(result); // 執行成功 -> 一開始 PromiseValue: undefined 過數秒後 PromiseValue: result
-      // reject('故意失敗'); // 執行失敗 -> PromiseValue: '故意失敗'
+      resolve(result); // 執行成功 -> 一開始 PromiseResult: undefined 過數秒後 PromiseResult: result
+      // reject('故意失敗'); // 執行失敗 -> PromiseResult: '故意失敗'
       // 程式碼如果出現錯誤，也代表 promise 做出了 reject 決議 -> reject(錯誤訊息); 並且不會繼續往下執行
       // 多次呼叫 resolve 並不會覆寫，只會決議第一個 resolve
     }, timer);
   });
 };
 
-// 結論：promise 一旦決議，即由peding狀態變為 resolve 或 reject 狀態，其狀態及值就不會再次改變。
+// 結論：promise 進入 fulfilled 或 rejected 狀態後，其狀態及結果就不會再次改變。
 // 這點保證了，後續在同一個 promise 上呼叫 then 方法註冊的回撥函式都將收到相同的結果
 
 // 刷牙 (3000) -> 吃早餐 (5000) -> 寫功課 (3000)
@@ -58,7 +52,7 @@ doBrushPromise
     console.log(result);
 
     let doEatPromise = doWork('吃早餐', 5000); 
-    // 5秒後 PromiseStatus: "resolved" , PromiseValue: 完成工作: 刷牙 at Date
+    // 5秒後 PromiseState: "resolved" , PromiseResult: 完成工作: 刷牙 at Date
     return doEatPromise; // return Promise.resolve(doEatPromise)
   })
   .then((result) => {
@@ -72,7 +66,7 @@ doBrushPromise
     // 這邊就接到「寫功課」成功的結果
     console.log(result);
     // 無 return -> 相當於呼叫了 return Promise.resolve(undefined)
-    // PromiseStatus: "resolved" , PromiseValue: undefined
+    // PromiseState: "resolved" , PromiseResult: undefined
   })
   .catch((error) => {
     // 在此之前發生的錯誤，都可以在這裡被捕捉
@@ -112,3 +106,4 @@ doBrushPromise
   // (error) => {
   //   return Promise.reject(error);
   // })
+

@@ -12,6 +12,7 @@ const { resolve } = require('path');
 //   }
 // });
 
+// Promise 寫法
 let p = new Promise((resolve, reject)=> {
   fs.readFile('test.txt', 'utf-8', (err, data) => {
     if (err) {
