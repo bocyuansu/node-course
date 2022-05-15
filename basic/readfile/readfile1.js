@@ -12,8 +12,8 @@ const { resolve } = require('path');
 //   }
 // });
 
-fs.readFile('test.txt', 'utf-8', (err, data) => {
-  let p = new Promise((resolve, reject)=> {
+let p = new Promise((resolve, reject)=> {
+  fs.readFile('test.txt', 'utf-8', (err, data) => {
     if (err) {
       // 錯誤了
       console.log('喔喔喔，發生錯誤了');
@@ -25,9 +25,6 @@ fs.readFile('test.txt', 'utf-8', (err, data) => {
       // console.log(data);
     };    
   })
-  p.then((result) => {
-    console.log(result);
-  }).catch((error) => {
-    console.log(error);
-  })
 });
+
+p.then(result => console.log(result)).catch(error => console.log(error))
