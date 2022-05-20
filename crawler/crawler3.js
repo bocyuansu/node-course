@@ -6,39 +6,19 @@
 const axios = require('axios');
 const fs = require('fs');
 
-let p = new Promise((resolve, reject) => {
-	fs.readFile('stock.txt', 'utf-8', (err, stockNo) => {
-		if (err) {
-			reject(err);
-		} else {
-			resolve(stockNo);
-		}
-	});
-}); // 一定要加分號，不然會報錯
-
 (async () => {
-	try {
-		let stockNo = await p;
-		console.log('read stock no from file:', stockNo);
-		return (
-			axios
-      .get('https://www.twse.com.tw/exchangeReport/STOCK_DAY', {
-        params: {
-          // 設定 query string
-          response: 'json',
-          date: '20220301',
-          stockNo: stockNo,
-        },
-      })
-      .then((response) => {
-        // response 物件
+    try {
+        let stockNo = await fs.readFile('stock.txt', 'utf-8');
+        let response = await axios
+            .get('https://www.twse.com.tw/exchangeReport/STOCK_DAY', {
+                params: {
+                    response: 'json',
+                    date: '20220301',
+                    stockNo: stockNo,
+                },
+            });
         console.log(response.data);
-      })
-      .catch((e) => {
+    } catch (e) {
         console.error(e);
-      })
-		);
-	} catch (e) {
-		console.error('read file error', e);
-	}
+    }
 })();
