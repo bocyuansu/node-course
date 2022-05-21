@@ -1,5 +1,6 @@
 // read stock no from mysql database
 
+const axios = require('axios');
 // mysql2 是一個第三方套件
 // npm i mysql2
 // 引用進來
@@ -19,7 +20,24 @@ require('dotenv').config();
   })
 
   let [data, fields] = await connection.execute('SELECT * FROM stocks');
-  console.log(data);
+  // console.log(data);
+
+  let mapResult = data.map(async (stock, i) => {
+    // console.log(stock);
+    let response = await axios.get('https://www.twse.com.tw/exchangeReport/STOCK_DAY', {
+        params: {
+            response: 'json',
+            date: '20220301',
+            stockNo: stock.id,
+        },
+    });
+    // 被 async 包起來，return 會是 Promise
+    return response.data;
+  });
+  // console.log(mapResult); 會是 Promise <pending>
+
+  let priceResults = await Promise.all(mapResult);
+  console.log(priceResults);
 
   connection.end();
 })();
