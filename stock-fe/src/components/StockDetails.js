@@ -1,19 +1,25 @@
 import axios from 'axios';
 import { useState, useEffect} from 'react';
+import { useParams } from 'react-router-dom';
 
 const StockDetails = () => {
   const [data, setData] = useState([]);
+
   // 目前在第幾頁
   const [page, setPage] = useState(1);
+
   // 總筆數 1,2,3,4,5,6,...,12
   const[lastPage, setLastPage] = useState(1);
+  
+  // 從網址上把 :stockId 拿下來
+  const { stockId } = useParams();
 
   // 當 useEffect 的第二個參數是空陣列的時候
   // 表示這是元件載入時的「副作用」
   useEffect(() => {
     let getPrices = async () => {
       // http://localhost:3001/stocks/2330?page=1
-      let response = await axios.get('http://localhost:3001/stocks/2330',{
+      let response = await axios.get(`http://localhost:3001/stocks/${stockId}`,{
         params: {
           page: page,
         }
@@ -47,6 +53,7 @@ const StockDetails = () => {
             cursor: 'pointer'
           }}
           key={i}
+          /* 管理好 page 這個狀態 */
           onClick={() => setPage(i)}
         >
         {i}
