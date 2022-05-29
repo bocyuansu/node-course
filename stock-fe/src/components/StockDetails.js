@@ -39,7 +39,7 @@ const StockDetails = () => {
     for(let i = 1; i <= lastPage; i++) {
       // page 是我們現在在第幾頁
       pages.push(
-        <il
+        <li
           style={{
             display: 'inline-block',
             margin: '2px',
@@ -58,7 +58,7 @@ const StockDetails = () => {
           onClick={() => setPage(i)}
         >
         {i}
-        </il>
+        </li>
       );
     }
     return pages;
