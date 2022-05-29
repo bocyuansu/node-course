@@ -25,7 +25,16 @@ const StockDetails = () => {
           page: page,
         }
       });
-      // 根據 page 取得 後端 API 的資料
+      // 取得 後端 API 的資料
+      // response.data = {
+      //   pagination: {
+      //     total,
+      //     lastPage,
+      //     page
+      //   },
+      //   data: pageResults,
+      // }
+
       setData(response.data.data);
       // setXXX 是一個非同步函式
       setLastPage(response.data.pagination.lastPage);
@@ -37,7 +46,7 @@ const StockDetails = () => {
   const getPages = () => {
     let pages = [];
     for(let i = 1; i <= lastPage; i++) {
-      // page 是我們現在在第幾頁
+      // page 是當前所在頁面
       pages.push(
         <li
           style={{
