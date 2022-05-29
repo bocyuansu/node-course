@@ -16,13 +16,15 @@ require('dotenv').config();
 // 這裡不會像爬蟲那樣，只建立一個連線
 // 但是，也不會幫每一個 request 都分別建立連線
 // ----> connection pool
+// 建立資料庫連線池
 let pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: process.env.DB_HOST, // 主機位置
+  port: process.env.DB_PORT, // 資料庫 port
+  user: process.env.DB_USER, // 資料庫帳號
+  password: process.env.DB_PASSWORD, // 資料庫密碼
+  database: process.env.DB_NAME, // 資料庫名稱
   // 為了 pool 新增的參數
+  // 連線池可建立的總連線數上限(預設最多為10個連線數)
   connectionLimit: 10,
 }).promise();
 
@@ -120,15 +122,16 @@ app.get('/ssr', (req, res, next) => {
 app.get('/stocks', async (req, res, next) => {
   // 撈資料庫的資料
   let [data, fields] = await pool.execute("SELECT * FROM stocks");
+  // data 會是一個 陣列 
   res.json(data);
 });
 
-// 取得某個股票 id 的資料
+// (使用路由中間件) 取得某個股票 id 的資料
 app.get('/stocks/:stockId', async (req, res, next) => {
   // :stockId 代表設定 stockId 參數
   // 取得網址上的參數 req.params
-  // req.params.stockId
-  console.log('get stocks by id', req.params);
+  // 可以透過 req.params.stockId 取得 2330
+  console.log('get stocks by stockId', req.params);
   // pool.execute 可以防止 SQL injection
   // console.log('query stock by id:', data);
 
@@ -136,22 +139,24 @@ app.get('/stocks/:stockId', async (req, res, next) => {
   // /stocks/:stockId?page=1&year=2022
   // req.query = {page:1, year:2022}
   // 1. 取得目前在第幾頁，而且利用 || 這個特性來做預設值
-  // req.query = {}
+  // req.query = {} -> 透過 ? 宣告 的 變數
   // 如果網址上沒有 page 這個 query string，那 req.query.page 會是 undefined
   // undefined 會是 false，所以 page 就被設定成 || 後面的數字
-  // 透過 ? 自訂的變數，可以用 req.query.變數名稱，來取得變數的值
-
+  console.log('req.query:', req.query);
+  
   let page = req.query.page || 1; // 如果沒有宣告 page，則預設 page = 1
   console.log('current page', page);
 
   // 2. 取得目前的總筆數
+  // 執行 SQL 語法 -> pool.execute( SQL語法 ) 
   let [allResults, fields] = await pool.execute('SELECT * FROM stock_prices WHERE stock_id = ?', [req.params.stockId]);
-  const total = allResults.length;
+  // pool.execute 會回傳兩個陣列，第一個陣列裝資料，第二個陣列通常用不到
+  const total = allResults.length; // 資料總筆數 = 陣列長度
   console.log('total:', total);
 
   // 3. 計算總共有幾頁
-  // Math.ceil 1.1 => 2   1.05 -> 2
-  const perPage = 5; // 每一頁有幾筆
+  // 無條件進位: Math.ceil 1.1 => 2   1.05 -> 2
+  const perPage = 5; // 每一頁 顯示幾筆 資料
   const lastPage = Math.ceil(total / perPage); // 最後一頁是第幾頁
   console.log('lastPage:', lastPage);
 
@@ -160,7 +165,7 @@ app.get('/stocks/:stockId', async (req, res, next) => {
   let offset = (page - 1) * perPage;
   console.log('offset:', offset);
 
-  // 5. 取得這一頁的資料 select * from table limit ? offset ?
+  // 5. 取得當前頁面的資料 select * from table limit 顯示筆數 offset 跳過筆數
   let [pageResults] = await pool.execute('SELECT * FROM stock_prices WHERE stock_id = ? ORDER BY date DESC LIMIT ? OFFSET ?', [req.params.stockId, perPage, offset]);
 
   // test case
@@ -174,7 +179,7 @@ app.get('/stocks/:stockId', async (req, res, next) => {
       lastPage,
       page
     },
-    // 真正的資料
+    // 真正的資料 -> 顯示當前頁面的資料
     data: pageResults,
   })
 
